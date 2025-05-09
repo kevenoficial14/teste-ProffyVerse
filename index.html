@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProffyVerse - O Universo dos Professores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#7A7AE5',
+                        accent: '#FFBD59',
+                        success: '#4CAF50',
+                        info: '#2196F3',
+                        warning: '#FF9800',
+                        danger: '#F44336',
+                        light: '#F8F9FA',
+                        dark: '#181818',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+
+        // Verificar preferência de tema escuro/claro
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-dark dark:text-gray-200 min-h-screen flex flex-col">
+    <!-- Layout principal -->
+    <div id="mainApp" class="flex flex-col min-h-screen">
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16 items-center">
+                    <!-- Logo e nome -->
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <i class="fas fa-chalkboard-teacher text-2xl text-primary mr-2"></i>
+                            <span class="text-xl font-bold text-primary">ProffyVerse</span>
+                        </div>
+                        <!-- Menu de navegação principal -->
+                        <nav class="hidden md:ml-8 md:flex md:space-x-4">
+                            <a href="#dashboard" data-section="dashboard" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-primary hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                            <a href="#planosdeaula" data-section="planosdeaula" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Planos de Aula</a>
+                            <a href="#notasfrequencia" data-section="notasfrequencia" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Notas e Frequência</a>
+                            <a href="#agenda" data-section="agenda" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Agenda</a>
+                            <a href="#comunidade" data-section="comunidade" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Comunidade</a>
+                        </nav>
+                    </div>
+                    <!-- Ícones de notificação e perfil -->
+                    <div class="flex items-center space-x-4">
+                        <button id="notificationBtn" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <span class="sr-only">Ver notificações</span>
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <div class="relative">
+                            <button id="userMenuBtn" class="flex rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                <span class="sr-only">Abrir menu do usuário</span>
+                                <div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center">
+                                    <span class="text-sm font-medium">JP</span>
+                                </div>
+                            </button>
+                            <!-- Dropdown do perfil -->
+                            <div id="userMenuDropdown" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 z-10">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Seu Perfil</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Configurações</a>
+                                <a href="#" id="logoutBtn" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Sair</a>
+                            </div>
+                        </div>
+                        <!-- Botão de menu mobile -->
+                        <button id="mobileMenuBtn" class="md:hidden rounded-md p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Menu mobile -->
+            <div id="mobileMenu" class="hidden md:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="#dashboard" data-section="dashboard" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                    <a href="#planosdeaula" data-section="planosdeaula" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Planos de Aula</a>
+                    <a href="#notasfrequencia" data-section="notasfrequencia" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Notas e Frequência</a>
+                    <a href="#agenda" data-section="agenda" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Agenda</a>
+                    <a href="#comunidade" data-section="comunidade" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Comunidade</a>
+                    <a href="#cursos" data-section="cursos" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Cursos</a>
+                    <a href="#biblioteca" data-section="biblioteca" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Biblioteca</a>
+                    <a href="#compartilhamento" data-section="compartilhamento" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Compartilhamento</a>
+                    <a href="#blog" data-section="blog" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Blog</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Conteúdo principal -->
+        <main class="flex-grow">
+            <!-- Dashboard -->
+            <section id="dashboard" class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fade-in">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Dashboard</h1>
+                
+                <!-- Estatísticas rápidas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-primary bg-opacity-10 rounded-full p-3">
+                                <i class="fas fa-book text-primary"></i>
+                            </div>
+                            <div class="ml-5">
+                                <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Planos de Aula</h2>
+                                <div class="flex items-baseline">
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">12</p>
+                                    <p class="ml-2 text-sm text-green-600">+2 esta semana</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-success bg-opacity-10 rounded-full p-3">
+                                <i class="fas fa-users text-success"></i>
+                            </div>
+                            <div class="ml-5">
+                                <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Turmas</h2>
+                                <div class="flex items-baseline">
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">5</p>
+                                    <p class="ml-2 text-sm text-green-600">+1 este mês</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-info bg-opacity-10 rounded-full p-3">
+                                <i class="fas fa-calendar text-info"></i>
+                            </div>
+                            <div class="ml-5">
+                                <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Eventos</h2>
+                                <div class="flex items-baseline">
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">8</p>
+                                    <p class="ml-2 text-sm text-yellow-600">Próximos 7 dias</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-warning bg-opacity-10 rounded-full p-3">
+                                <i class="fas fa-graduation-cap text-warning"></i>
+                            </div>
+                            <div class="ml-5">
+                                <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400">Alunos</h2>
+                                <div class="flex items-baseline">
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">127</p>
+                                    <p class="ml-2 text-sm text-green-600">+5 novos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Widgets do dashboard -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Próximos eventos -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Próximas Aulas</h2>
+                        </div>
+                        <div class="p-4">
+                            <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <li class="py-3">
+                                    <div class="flex justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Matemática - 9º Ano A</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Equações do 2º grau</p>
+                                        </div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                                            <p>Hoje, 10:00 - 11:30</p>
+                                            <p class="text-primary">Sala 12</p>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="py-3">
+                                    <div class="flex justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">História - 8º Ano B</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Revolução Industrial</p>
+                                        </div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                                            <p>Hoje, 13:30 - 15:00</p>
+                                            <p class="text-primary">Sala 8</p>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="py-3">
+                                    <div class="flex justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Ciências - 7º Ano C</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Sistema Solar</p>
+                                        </div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                                            <p>Amanhã, 08:00 - 09:30</p>
+                                            <p class="text-primary">Laboratório 2</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="mt-4">
+                                <a href="#agenda" data-section="agenda" class="text-sm font-medium text-primary hover:text-secondary">Ver agenda completa &rarr;</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Atividades pendentes -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Atividades Pendentes</h2>
+                        </div>
+                        <div class="p-4">
+                            <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <li class="py-3">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Corrigir provas do 9º Ano A</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Vence em 2 dias</p>
+                                        </div>
+                                        <div class="ml-auto">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+                                                Médio
+                                            </span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="py-3">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Preparar apresentação para reunião de pais</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Vence em 5 dias</p>
+                                        </div>
+                                        <div class="ml-auto">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                                                Alta
+                                            </span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="py-3">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Atualizar plano de aula de Ciências</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Vence em 1 semana</p>
+                                        </div>
+                                        <div class="ml-auto">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                                Baixa
+                                            </span>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="mt-4">
+                                <button class="text-sm font-medium text-primary hover:text-secondary">
+                                    + Adicionar nova tarefa
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Acessos rápidos -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-8">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-white">Acesso Rápido</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <a href="#planosdeaula" data-section="planosdeaula" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-book text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Planos de Aula</span>
+                            </a>
+                            <a href="#notasfrequencia" data-section="notasfrequencia" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-clipboard-check text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Notas e Frequência</span>
+                            </a>
+                            <a href="#agenda" data-section="agenda" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-calendar-alt text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Agenda</span>
+                            </a>
+                            <a href="#atividades" data-section="atividades" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-tasks text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Atividades Interativas</span>
+                            </a>
+                            <a href="#comunidade" data-section="comunidade" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-users text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Comunidade</span>
+                            </a>
+                            <a href="#cursos" data-section="cursos" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-graduation-cap text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Cursos</span>
+                            </a>
+                            <a href="#biblioteca" data-section="biblioteca" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-book-open text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Biblioteca</span>
+                            </a>
+                            <a href="#compartilhamento" data-section="compartilhamento" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-share-alt text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Compartilhamento</span>
+                            </a>
+                            <a href="#blog" data-section="blog" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-newspaper text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Blog</span>
+                            </a>
+                            <a href="#relatorios" data-section="relatorios" class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-chart-bar text-2xl text-primary mb-2"></i>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 text-center">Relatórios</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Novidades e conteúdo recente -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Novidades da comunidade -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Novidades da Comunidade</h2>
+                            <a href="#comunidade" data-section="comunidade" class="text-sm font-medium text-primary hover:text-secondary">Ver todos</a>
+                        </div>
+                        <div class="p-4">
+                            <ul class="space-y-4">
+                                <li class="border-l-4 border-primary pl-4 py-1">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Novo projeto colaborativo: Ciências Interdisciplinares</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Por Ana Silva, há 2 horas</p>
+                                </li>
+                                <li class="border-l-4 border-primary pl-4 py-1">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Discussão: Uso de tecnologia em sala de aula</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Por Carlos Mendes, há 1 dia</p>
+                                </li>
+                                <li class="border-l-4 border-primary pl-4 py-1">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Compartilhamento: Modelos de avaliação formativa</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Por Juliana Costa, há 2 dias</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Conteúdo do blog recente -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Artigos Recentes</h2>
+                            <a href="#blog" data-section="blog" class="text-sm font-medium text-primary hover:text-secondary">Ver todos</a>
+                        </div>
+                        <div class="p-4">
+                            <ul class="space-y-4">
+                                <li>
+                                    <a href="#" class="block">
+                                        <h3 class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary">7 Estratégias para Engajar Alunos em Aulas Online</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Postado em 15/07/2023 • 8 min de leitura</p>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="block">
+                                        <h3 class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary">Gamificação na Educação: Aplicações Práticas</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Postado em 12/07/2023 • 6 min de leitura</p>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" class="block">
+                                        <h3 class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary">Como Adaptar o Currículo para Alunos com Necessidades Especiais</h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Postado em 10/07/2023 • 10 min de leitura</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Planos de Aula -->
+            <section id="planosdeaula" class="hidden py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Planos de Aula</h1>
+                    <button id="createLessonPlanBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary btn-hover">
+                        <i class="fas fa-plus mr-2"></i> Novo Plano
+                    </button>
+                </div>
+
+                <!-- Filtros e busca -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
+                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                            <div>
+                                <label for="lesson-subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Disciplina</label>
+                                <select id="lesson-subject" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="">Todas as disciplinas</option>
+                                    <option value="matematica">Matemática</option>
+                                    <option value="portugues">Português</option>
+                                    <option value="ciencias">Ciências</option>
+                                    <option value="historia">História</option>
+                                    <option value="geografia">Geografia</option>
+                                    <option value="ingles">Inglês</option>
+                                    <option value="artes">Artes</option>
+                                    <option value="educacao-fisica">Educação Física</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="lesson-grade" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Série</label>
+                                <select id="lesson-grade" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="">Todas as séries</option>
+                                    <option value="1">1º Ano</option>
+                                    <option value="2">2º Ano</option>
+                                    <option value="3">3º Ano</option>
+                                    <option value="4">4º Ano</option>
+                                    <option value="5">5º Ano</option>
+                                    <option value="6">6º Ano</option>
+                                    <option value="7">7º Ano</option>
+                                    <option value="8">8º Ano</option>
+                                    <option value="9">9º Ano</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-1/3">
+                            <label for="lesson-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
+                            <div class="relative">
+                                <input type="text" id="lesson-search" class="block w-full pr-10 pl-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm" placeholder="Buscar planos de aula...">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de planos -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Título</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Disciplina</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Série</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duração</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Última Edição</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700" id="lesson-plans-list">
+                                    <!-- Planos de aula serão inseridos aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal de Plano de Aula -->
+                <div id="lessonPlanModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+                    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                            <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
+                        </div>
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
+                            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <div class="sm:flex sm:items-start">
+                                    <div class="w-full">
+                                        <div class="mt-3 text-center sm:mt-0 sm:text-left">
+                                            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="lessonPlanTitle">
+                                                Novo Plano de Aula
+                                            </h3>
+                                            <div class="mt-6">
+                                                <form id="lessonPlanForm" class="space-y-6">
+                                                    <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                                                        <div class="sm:col-span-4">
+                                                            <label for="planTitle" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Título
+                                                            </label>
+                                                            <div class="mt-1">
+                                                                <input type="text" name="planTitle" id="planTitle" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ex: Introdução aos Números Decimais">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="sm:col-span-2">
+                                                            <label for="planSubject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Disciplina
+                                                            </label>
+                                                            <div class="mt-1">
+                                                                <select id="planSubject" name="planSubject" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                                                    <option value="matematica">Matemática</option>
+                                                                    <option value="portugues">Português</option>
+                                                                    <option value="ciencias">Ciências</option>
+                                                                    <option value="historia">História</option>
+                                                                    <option value="geografia">Geografia</option>
+                                                                    <option value="ingles">Inglês</option>
+                                                                    <option value="artes">Artes</option>
+                                                                    <option value="educacao-fisica">Educação Física</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="sm:col-span-2">
+                                                            <label for="planGrade" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Série
+                                                            </label>
+                                                            <div class="mt-1">
+                                                                <select id="planGrade" name="planGrade" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                                                    <option value="1">1º Ano</option>
+                                                                    <option value="2">2º Ano</option>
+                                                                    <option value="3">3º Ano</option>
+                                                                    <option value="4">4º Ano</option>
+                                                                    <option value="5">5º Ano</option>
+                                                                    <option value="6">6º Ano</option>
+                                                                    <option value="7">7º Ano</option>
+                                                                    <option value="8">8º Ano</option>
+                                                                    <option value="9">9º Ano</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="sm:col-span-2">
+                                                            <label for="planDuration" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Duração (minutos)
+                                                            </label>
+                                                            <div class="mt-1">
+                                                                <input type="number" name="planDuration" id="planDuration" min="1" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ex: 50">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="sm:col-span-6">
+                                                            <label for="planObjectives" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Objetivos
+                                                            </label>
+                                                            <div class="mt-1">
+                                                                <textarea id="planObjectives" name="planObjectives" rows="3" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva os objetivos de aprendizagem desta aula"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="sm:col-span-6">
+                                                            <label for="planContent" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Conteúdo
+                                                            </label>
+                                                            <div class="mt-1">
+                                                                <div class="editor-toolbar">
+                                                                    <button type="button" data-command="bold"><i class="fas fa-bold"></i></button>
+                                                                    <button type="button" data-command="italic"><i class="fas fa-italic"></i></button>
+                                                                    <button type="button" data-command="underline"><i class="fas fa-underline"></i></button>
+                                                                    <button type="button" data-command="insertOrderedList"><i class="fas fa-list-ol"></i></button>
+                                                                    <button type="button" data-command="insertUnorderedList"><i class="fas fa-list-ul"></i></button>
+                                                                </div>
+                                                                <div id="planContent" class="editor-content dark:bg-gray-700 dark:text-white" contenteditable="true"></div>
+                                                                <input type="hidden" name="planContentHidden" id="planContentHidden">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="sm:col-span-6">
+                                                            <label for="planResources" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Recursos Necessários
+                                                            </label>
+                                                            <div class="mt-1">
+                                                                <textarea id="planResources" name="planResources" rows="2" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Liste os materiais e recursos necessários para esta aula"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="sm:col-span-6">
+                                                            <label for="planEvaluation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                                Avaliação
+                                                            </label>
+                                                            <div class="mt-1">
+                                                                <textarea id="planEvaluation" name="planEvaluation" rows="2" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva como a aprendizagem será avaliada"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="button" id="saveLessonPlanBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm">
+                                    Salvar
+                                </button>
+                                <button type="button" id="cancelLessonPlanBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seções restantes -->
+            <!-- (Como são muito extensas, vamos manter as principais e remover algumas para manter o código conciso) -->
+            
+            <!-- Notas e Frequência -->
+            <section id="notasfrequencia" class="hidden py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Notas e Frequência</h1>
+                </div>
+
+                <!-- Seleção de turma -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
+                        <div>
+                            <label for="class-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Turma</label>
+                            <select id="class-select" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="9A">9º Ano A</option>
+                                <option value="8B">8º Ano B</option>
+                                <option value="7C">7º Ano C</option>
+                                <option value="6D">6º Ano D</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="subject-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Disciplina</label>
+                            <select id="subject-select" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="matematica">Matemática</option>
+                                <option value="portugues">Português</option>
+                                <option value="ciencias">Ciências</option>
+                                <option value="historia">História</option>
+                                <option value="geografia">Geografia</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="period-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Período</label>
+                            <select id="period-select" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="1">1º Bimestre</option>
+                                <option value="2">2º Bimestre</option>
+                                <option value="3">3º Bimestre</option>
+                                <option value="4">4º Bimestre</option>
+                            </select>
+                        </div>
+                        <div class="md:pt-7">
+                            <button id="loadClassBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary btn-hover">
+                                <i class="fas fa-sync-alt mr-2"></i> Carregar Turma
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Abas -->
+                <div class="mb-6">
+                    <div class="sm:hidden">
+                        <label for="tabs" class="sr-only">Selecione uma aba</label>
+                        <select id="tabs" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="grades">Notas</option>
+                            <option value="attendance">Frequência</option>
+                        </select>
+                    </div>
+                    <div class="hidden sm:block">
+                        <div class="border-b border-gray-200 dark:border-gray-700">
+                            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                <a href="#" data-tab="grades" class="grades-tab border-primary text-primary dark:text-primary px-3 py-2 border-b-2 font-medium text-sm" aria-current="page">Notas</a>
+                                <a href="#" data-tab="attendance" class="attendance-tab text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 px-3 py-2 border-b-2 border-transparent font-medium text-sm">Frequência</a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo das abas -->
+                <div id="tabContent">
+                    <!-- Notas -->
+                    <div id="grades-content" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Notas - 9º Ano A - Matemática</h2>
+                            <div class="flex space-x-2">
+                                <button id="addActivityBtn" class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary btn-hover">
+                                    <i class="fas fa-plus mr-1"></i> Atividade
+                                </button>
+                                <button id="exportGradesBtn" class="inline-flex items-center px-3 py-1 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary btn-hover">
+                                    <i class="fas fa-download mr-1"></i> Exportar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Aluno
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Prova 1<br><span class="text-xs font-normal normal-case">(Peso 3)</span>
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Trabalho<br><span class="text-xs font-normal normal-case">(Peso 2)</span>
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Prova 2<br><span class="text-xs font-normal normal-case">(Peso 3)</span>
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Participação<br><span class="text-xs font-normal normal-case">(Peso 2)</span>
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider bg-gray-100 dark:bg-gray-600">
+                                            Média
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Situação
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700" id="grades-table-body">
+                                    <!-- Dados serão inseridos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Frequência -->
+                    <div id="attendance-content" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                        <!-- Conteúdo da aba de frequência -->
+                    </div>
+                </div>
+                
+                <!-- Modais (activityModal, attendanceModal) seriam incluídos aqui -->
+            </section>
+
+            <!-- Agenda -->
+            <section id="agenda" class="hidden py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Agenda</h1>
+                    <button id="createEventBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary btn-hover">
+                        <i class="fas fa-plus mr-2"></i> Novo Evento
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
+                    <div id="calendar" class="mt-4"></div>
+                </div>
+
+                <!-- Modal de Evento seria incluído aqui -->
+            </section>
+
+            <!-- Comunidade -->
+            <section id="comunidade" class="hidden py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Comunidade</h1>
+                    <button id="createPostBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary btn-hover">
+                        <i class="fas fa-pen mr-2"></i> Nova Publicação
+                    </button>
+                </div>
+
+                <!-- Conteúdo da comunidade -->
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-gray-800 shadow-sm mt-8">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <i class="fas fa-chalkboard-teacher text-2xl text-primary mr-2"></i>
+                        <span class="text-xl font-bold text-primary">ProffyVerse</span>
+                    </div>
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 md:mb-0">
+                            &copy; 2023 ProffyVerse. Todos os direitos reservados.
+                        </p>
+                        <nav class="flex space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                            <a href="#" class="hover:text-primary">Termos</a>
+                            <a href="#" class="hover:text-primary">Privacidade</a>
+                            <a href="#" class="hover:text-primary">Cookies</a>
+                            <a href="#" class="hover:text-primary">Contato</a>
+                            <a href="#" class="hover:text-primary">Ajuda</a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
